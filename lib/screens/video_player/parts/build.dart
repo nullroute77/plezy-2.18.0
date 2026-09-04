@@ -231,21 +231,6 @@ extension _VideoPlayerBuildMethods on VideoPlayerScreenState {
           hideOnExit: hideChromeOnMouseExit,
           child: Stack(
             children: [
-              if (widget.isLive)
-                Positioned.fill(
-                  child: Offstage(
-                    offstage: !isLiveGuideVisible,
-                    child: LiveTvGuideLayout(
-                      guideKey: _playbackGuideKey,
-                      channels: liveChannels,
-                      playingChannelScopeKey: playingChannelScopeKey,
-                      hasActivePlayback: true,
-                      onTuneChannel: _switchLiveChannelTo,
-                      onBack: _hideLiveTvGuide,
-                      onStopPlayback: () => unawaited(_exitPlayerRoute(navigateHome: false)),
-                    ),
-                  ),
-                ),
               // macOS PiP placeholder — video is in PiP window, show background with icon
               // Placed before Video so controls render on top
               if (Platform.isMacOS && !isLiveGuideVisible) const VideoPlayerMacPipPlaceholder(),
@@ -380,6 +365,26 @@ extension _VideoPlayerBuildMethods on VideoPlayerScreenState {
                   },
                 ),
               ),
+              // Paint the guide after the transparent Flutter video region.
+              // The actual Windows video is a child HWND below Flutter's DComp
+              // surface; keeping the opaque guide as the last Flutter layer
+              // makes its ownership explicit while its preview hole still
+              // reveals the resized native video.
+              if (widget.isLive)
+                Positioned.fill(
+                  child: Offstage(
+                    offstage: !isLiveGuideVisible,
+                    child: LiveTvGuideLayout(
+                      guideKey: _playbackGuideKey,
+                      channels: liveChannels,
+                      playingChannelScopeKey: playingChannelScopeKey,
+                      hasActivePlayback: true,
+                      onTuneChannel: _switchLiveChannelTo,
+                      onBack: _hideLiveTvGuide,
+                      onStopPlayback: () => unawaited(_exitPlayerRoute(navigateHome: false)),
+                    ),
+                  ),
+                ),
               // Netflix-style auto-play overlay (hidden in PiP mode)
               if (!isLiveGuideVisible)
                 VideoPlayerPlayNextOverlay(

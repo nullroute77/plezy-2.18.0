@@ -187,29 +187,43 @@ class _VideoState extends State<Video> {
     _sentDevicePixelRatio = dpr;
 
     final player = widget.player as VideoRectSupport;
-    player.setVideoRect(left: left, top: top, right: right, bottom: bottom, devicePixelRatio: dpr).catchError((
-      Object e,
-    ) {
-      // Geometry is the only thing that makes the native surface visible,
-      // so a rejected rect is a black video area, not a cosmetic glitch.
-      // Post-frame callbacks have nobody to rethrow to, so route it to the
-      // player's error stream rather than leaving an unhandled async error.
-      //
-      // Drop the sent-rect cache too: it was recorded before the call
-      // resolved, and keeping it would short-circuit every later identical
-      // layout pass, freezing the failure in place. Cleared, the next layout
-      // or resize retries for free.
-      if (mounted &&
-          _sentLeft == left &&
-          _sentTop == top &&
-          _sentRight == right &&
-          _sentBottom == bottom &&
-          _sentDevicePixelRatio == dpr) {
-        _hasSentRect = false;
-      }
-      if (!player.errorController.isClosed) {
-        player.errorController.add(PlayerError('Failed to set video rect: $e'));
-      }
-    });
+    player
+        .setVideoRect(left: left, top: top, right: right, bottom: bottom, devicePixelRatio: dpr)
+        .then((_) {
+          if (!mounted || defaultTargetPlatform != TargetPlatform.windows) return;
+
+          // SetVideoRect moves the native mpv child HWND after Flutter has
+          // presented this frame. Windows invalidates the newly uncovered
+          // portion of the Flutter view while moving that child; without a
+          // following Flutter paint, its white backing surface can remain on
+          // screen until the next input event triggers a frame. Mark every
+          // render view dirty only after the platform call has completed so
+          // guide mode is presented again above the resized video preview.
+          for (final renderView in WidgetsBinding.instance.renderViews) {
+            renderView.markNeedsPaint();
+          }
+        })
+        .catchError((Object e) {
+          // Geometry is the only thing that makes the native surface visible,
+          // so a rejected rect is a black video area, not a cosmetic glitch.
+          // Post-frame callbacks have nobody to rethrow to, so route it to the
+          // player's error stream rather than leaving an unhandled async error.
+          //
+          // Drop the sent-rect cache too: it was recorded before the call
+          // resolved, and keeping it would short-circuit every later identical
+          // layout pass, freezing the failure in place. Cleared, the next layout
+          // or resize retries for free.
+          if (mounted &&
+              _sentLeft == left &&
+              _sentTop == top &&
+              _sentRight == right &&
+              _sentBottom == bottom &&
+              _sentDevicePixelRatio == dpr) {
+            _hasSentRect = false;
+          }
+          if (!player.errorController.isClosed) {
+            player.errorController.add(PlayerError('Failed to set video rect: $e'));
+          }
+        });
   }
 }

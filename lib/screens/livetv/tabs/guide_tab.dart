@@ -1940,18 +1940,41 @@ class _ChannelCellState extends State<_ChannelCell> {
                   child: Stack(
                     alignment: .center,
                     children: [
-                      AnimatedOpacity(
-                        opacity: showAction ? 0.3 : 1.0,
-                        duration: FocusTheme.getAnimationDuration(context),
-                        child: widget.channelThumb != null && widget.client != null
-                            ? OptimizedMediaImage.thumb(
-                                client: widget.client!,
-                                imagePath: widget.channelThumb,
-                                width: widget.channelColumnWidth - 16,
-                                height: widget.rowHeight - 16,
-                                fit: BoxFit.contain,
-                              )
-                            : widget.fallbackBuilder(),
+                      Column(
+                        children: [
+                          Expanded(
+                            child: Center(
+                              child: AnimatedOpacity(
+                                opacity: showAction ? 0.3 : 1.0,
+                                duration: FocusTheme.getAnimationDuration(context),
+                                child: widget.channelThumb != null && widget.client != null
+                                    ? OptimizedMediaImage.thumb(
+                                        client: widget.client!,
+                                        imagePath: widget.channelThumb,
+                                        width: widget.channelColumnWidth - 16,
+                                        height: widget.rowHeight - 16,
+                                        fit: BoxFit.contain,
+                                      )
+                                    : widget.fallbackBuilder(),
+                              ),
+                            ),
+                          ),
+                          if (widget.sourceLabel case final sourceLabel?)
+                            SizedBox(
+                              height: 12,
+                              child: Text(
+                                sourceLabel,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: contentColor.withValues(alpha: 0.65),
+                                  fontSize: 9,
+                                  height: 1,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                        ],
                       ),
                       if (showAction) AppIcon(Symbols.play_arrow_rounded, size: 32, color: contentColor),
                       if (widget.isFavorite)
@@ -1975,19 +1998,6 @@ class _ChannelCellState extends State<_ChannelCell> {
                               color: widget.isFocused ? theme.colorScheme.onPrimary : Colors.red,
                               shape: BoxShape.circle,
                             ),
-                          ),
-                        ),
-                      if (widget.sourceLabel case final sourceLabel?)
-                        Positioned(
-                          left: 10,
-                          right: 10,
-                          bottom: 0,
-                          child: Text(
-                            sourceLabel,
-                            style: theme.textTheme.labelSmall?.copyWith(color: contentColor.withValues(alpha: 0.65)),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
                           ),
                         ),
                     ],

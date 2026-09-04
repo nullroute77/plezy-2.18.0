@@ -527,6 +527,8 @@ void main() {
 
     expect(find.text('server-a'), findsOneWidget);
     expect(find.text('server-b'), findsOneWidget);
+    expect(tester.getRect(find.text('A')).bottom, lessThanOrEqualTo(tester.getRect(find.text('server-a')).top));
+    expect(tester.getRect(find.text('B')).bottom, lessThanOrEqualTo(tester.getRect(find.text('server-b')).top));
     expect(tester.takeException(), isNull);
   });
 
