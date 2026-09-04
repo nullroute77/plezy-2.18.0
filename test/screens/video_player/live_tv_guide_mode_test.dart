@@ -34,11 +34,6 @@ void main() {
     await SettingsService.getInstance();
   });
 
-  test('Back deterministically toggles fullscreen and guide modes', () {
-    expect(liveTvViewModeAfterBack(LiveTvViewMode.fullscreen), LiveTvViewMode.guide);
-    expect(liveTvViewModeAfterBack(LiveTvViewMode.guide), LiveTvViewMode.fullscreen);
-  });
-
   testWidgets('guide transitions retain the same player and session owner without transport teardown', (tester) async {
     final nativeInitialize = Completer<bool>();
     final fakePlayer = _LifecycleCountingPlayer();

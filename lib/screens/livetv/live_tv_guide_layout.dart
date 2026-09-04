@@ -21,11 +21,6 @@ import 'tabs/guide_tab.dart';
 /// The two presentations owned by one Live TV player route.
 enum LiveTvViewMode { fullscreen, guide }
 
-LiveTvViewMode liveTvViewModeAfterBack(LiveTvViewMode current) => switch (current) {
-  LiveTvViewMode.fullscreen => LiveTvViewMode.guide,
-  LiveTvViewMode.guide => LiveTvViewMode.fullscreen,
-};
-
 /// Shared information-first Live TV guide used by both the browse screen and
 /// the still-playing guide presentation inside [VideoPlayerScreen].
 class LiveTvGuideLayout extends StatefulWidget {
